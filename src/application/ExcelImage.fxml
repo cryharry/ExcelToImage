@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.*?>
+<?import javafx.scene.canvas.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.collections.*?>
+
+<Pane prefHeight="291.0" prefWidth="243.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.ExcelController">
+   <children>
+      <Button layoutX="26.0" layoutY="217.0" mnemonicParsing="false" onAction="#doit" prefHeight="48.0" prefWidth="177.0" text="사진 저장하기" />
+      <ComboBox fx:id="classCombo" layoutX="95.0" layoutY="142.0" prefHeight="23.0" prefWidth="75.0">
+      	<items>
+      		<FXCollections fx:factory="observableArrayList">
+	          <String fx:value="1" />
+	          <String fx:value="2" />
+	          <String fx:value="3" />
+	        </FXCollections>
+      	</items>
+      </ComboBox>
+      <Label layoutX="59.0" layoutY="146.0" text="학년" />
+      <Label layoutX="65.0" layoutY="184.0" text="반" />
+      <TextField fx:id="banTxt" layoutX="95.0" layoutY="180.0" prefHeight="23.0" prefWidth="75.0" />
+      <Button layoutX="28.0" layoutY="81.0" mnemonicParsing="false" onAction="#handleSaveFolder" prefHeight="48.0" prefWidth="183.0" text="저장 폴더 선택" />
+      <Button layoutX="28.0" layoutY="14.0" mnemonicParsing="false" onAction="#handleOpenExcel" prefHeight="48.0" prefWidth="183.0" text="엑셀 불러오기" />
+   </children>
+</Pane>
