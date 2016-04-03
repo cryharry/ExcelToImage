@@ -3,11 +3,10 @@ package application;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.HashMap;
 import java.util.ResourceBundle;
 
+import com.extentech.ExtenXLS.CellHandle;
 import com.extentech.ExtenXLS.ImageHandle;
 import com.extentech.ExtenXLS.WorkBookHandle;
 import com.extentech.ExtenXLS.WorkSheetHandle;
@@ -16,10 +15,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputDialog;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -32,11 +29,13 @@ public class ExcelController implements Initializable {
 	@FXML
 	private File file;
 	@FXML
-	private String savefolder, excelFile, classStr, banStr, strNum;
+	private String savefolder, excelFile, classStr, banStr, strNum, mapPoint;
 	@FXML
 	private ComboBox<String> classCombo;
 	@FXML
 	private TextField banTxt;
+	@FXML
+	private HashMap<String, String> point = new HashMap<String, String>();
 	
 	public void doit() {
 		if(excelFile == null) {
@@ -47,48 +46,120 @@ public class ExcelController implements Initializable {
 			handleSaveFolder();
 		}
 		
-		this.classStr = classCombo.getSelectionModel().getSelectedItem();
-		if(classStr == null) {
-			inputClass();
-		}
-		
-		this.banStr = banTxt.getText();
-		if(banStr.equals("")) {
-			intputBan();
-		}
-		
 		WorkBookHandle tbo = new WorkBookHandle(excelFile);
-		WorkSheetHandle[] sheets = tbo.getWorkSheets();
-			
-		for (int i = 0; i < sheets.length; i++) {
-		    ImageHandle[] extracted = sheets[i].getImages();
-		    for (int t = 0; t < extracted.length; t++) {
-		        FileOutputStream outimg;
-				try {
-					if(Integer.valueOf(banStr) < 10) {
-						if(Integer.valueOf(extracted[t].getName().replace("Picture ", "")) <=9){ 
-							strNum = classStr+"0"+banStr+"0";
-						} else {
-							strNum = classStr+"0"+banStr;
-						}
-					} else {
-						if(Integer.valueOf(extracted[t].getName().replace("Picture ", "")) <=9){ 
-							strNum = classStr+banStr+"0";
-						} else {
-							strNum = classStr+banStr;
-						}
+		CellHandle[] cellHandle = tbo.getCells();
+		for(int i=7;i<cellHandle.length;i++) {
+				if(cellHandle[i].getCell().toString().startsWith("LABELSST")) {
+					String reCell = cellHandle[i].getCell().toString().replace("LABELSST:", "");
+					if(reCell.matches(".*[0-9]{5,}.*")){
+						mapPoint = reCell.split(":")[0];
+						point.put(mapPoint, reCell.split(":")[1].substring(0, 5));
 					}
-					
-					outimg = new FileOutputStream(savefolder +"\\"+ strNum + extracted[t].getName().replace("Picture ", "") + ".jpg");
-					extracted[t].write(outimg);
-			        outimg.flush();
-			        outimg.close();
-				} catch (Exception e) {
-					e.printStackTrace();
 				}
-		        tbo.close();
-		    }
 		}
+		WorkSheetHandle[] sheets = tbo.getWorkSheets();
+		try {
+			for(int j=0;j<sheets.length;j++){
+			ImageHandle[] extracted  = sheets[j].getImages();
+				for(int k=0; k<extracted.length; k++) {
+					int l= extracted[k].getRow()+2;
+					int m = extracted[k].getCol()+1;
+					String x = "";
+					switch (m) {
+					case 1:
+						x = "A";
+						break;
+					case 2:
+						x = "B";
+						break;
+					case 3:
+						x = "C";
+						break;
+					case 4:
+						x = "D";
+						break;
+					case 5:
+						x = "E";
+						break;
+					case 6:
+						x = "F";
+						break;
+					case 7:
+						x = "G";
+						break;
+					case 8:
+						x = "H";
+						break;
+					case 9:
+						x = "I";
+						break;
+					case 10:
+						x = "J";
+						break;
+					case 11:
+						x = "K";
+					case 12:
+						x = "L";
+						break;
+					case 13:
+						x = "M";
+						break;
+					case 14:
+						x = "L";
+						break;
+					case 15:
+						x = "M";
+						break;
+					case 16:
+						x = "N";
+						break;
+					case 17:
+						x = "Q";
+						break;
+					case 18:
+						x = "R";
+						break;
+					case 19:
+						x = "S";
+						break;
+					case 20:
+						x = "T";
+						break;
+					case 21:
+						x = "U";
+						break;
+					case 22:
+						x = "V";
+						break;
+					case 23:
+						x = "W";
+						break;
+					case 24:
+						x = "X";
+						break;
+					case 25:
+						x = "Y";
+						break;
+					case 26:
+						x = "Z";
+						break;
+					default:
+						break;
+					}
+					mapPoint = x+l;
+					System.out.println(point.get(mapPoint));
+					FileOutputStream outimg = new FileOutputStream(savefolder+"\\"+point.get(mapPoint)+".jpg");
+					extracted[k].write(outimg);
+					outimg.flush();
+					outimg.close();
+				}
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		tbo.close();
+		
 		Alert alert = new Alert(AlertType.INFORMATION);
         alert.setTitle("저장완료");
         alert.setHeaderText(null);
@@ -100,40 +171,7 @@ public class ExcelController implements Initializable {
         savefolder = null;
 
 	}
-	
-	private void inputClass() {
-		List<String> choices = new ArrayList<>();
-		choices.add("1");
-		choices.add("2");
-		choices.add("3");
 
-		ChoiceDialog<String> dialog = new ChoiceDialog<>("1", choices);
-		dialog.setHeaderText("학년을 선택해 주세요!");
-		dialog.setContentText("학년:");
-
-		Optional<String> result = dialog.showAndWait();
-		if (result.isPresent()){
-		    this.classStr = result.get();
-		} else {
-			inputClass();
-		}
-	}
-
-	private void intputBan() {
-		TextInputDialog dialog = new TextInputDialog("1");
-		
-		dialog.setHeaderText("반을 입력해 주세요!");
-		dialog.setContentText("반:");
-
-		Optional<String> result = dialog.showAndWait();
-		if(result.isPresent()) {
-			this.banStr = result.get();
-		} else {
-			intputBan();
-		}
-	}
-
-	
 	
 	@FXML
 	public void handleOpenExcel() {
@@ -156,7 +194,5 @@ public class ExcelController implements Initializable {
 	
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
-		assert classCombo != null : "fx:id=\"classCombo\" was not injected: check your FXML file 'ExcelImage.fxml'.";
-		assert banTxt != null : "fx:id=\"banTxt\" was not injected: check your FXML file 'ExcelImage.fxml'.";	
 	}
 }
