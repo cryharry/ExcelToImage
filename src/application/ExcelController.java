@@ -29,7 +29,7 @@ public class ExcelController implements Initializable {
 	@FXML
 	private File file;
 	@FXML
-	private String savefolder, excelFile, classStr, banStr, strNum, mapPoint;
+	private String savefolder, excelFile, classStr, banStr, mapPoint;
 	@FXML
 	private ComboBox<String> classCombo;
 	@FXML
@@ -41,21 +41,30 @@ public class ExcelController implements Initializable {
 		if(excelFile == null) {
 			handleOpenExcel();
 		}
-		
 		if(savefolder == null) {
 			handleSaveFolder();
 		}
 		
 		WorkBookHandle tbo = new WorkBookHandle(excelFile);
 		CellHandle[] cellHandle = tbo.getCells();
-		for(int i=7;i<cellHandle.length;i++) {
+		for(int i=3;i<cellHandle.length;i++) {
 				if(cellHandle[i].getCell().toString().startsWith("LABELSST")) {
 					String reCell = cellHandle[i].getCell().toString().replace("LABELSST:", "");
-					if(reCell.matches(".*[0-9]{5,}.*")){
+					if(i<5 && reCell.contains("학년")) {
+						classStr = reCell.split(":")[1].substring(reCell.split(":")[1].indexOf("학년도")+5,reCell.split(":")[1].length()).substring(0, 1);
+						if(reCell.contains("반")){
+							banStr = reCell.split(":")[1].substring(reCell.split(":")[1].lastIndexOf("반")-1,reCell.split(":")[1].length()-1);
+						}
+					}
+					if(reCell.contains("번")){
 						mapPoint = reCell.split(":")[0];
-						point.put(mapPoint, reCell.split(":")[1].substring(0, 5));
+						point.put(mapPoint,reCell.split(":")[1].substring(0, reCell.split(":")[1].indexOf("번")));
 					}
 				}
+		}
+		
+		if(Integer.valueOf(banStr)<10) {
+			banStr = "0" + banStr;
 		}
 		WorkSheetHandle[] sheets = tbo.getWorkSheets();
 		try {
@@ -63,7 +72,10 @@ public class ExcelController implements Initializable {
 			ImageHandle[] extracted  = sheets[j].getImages();
 				for(int k=0; k<extracted.length; k++) {
 					int l= extracted[k].getRow()+2;
+					
 					int m = extracted[k].getCol()+1;
+					
+					System.out.println(m+"/"+l+":"+extracted[k].getName());
 					String x = "";
 					switch (m) {
 					case 1:
@@ -148,16 +160,24 @@ public class ExcelController implements Initializable {
 					}
 					mapPoint = x+l;
 					System.out.println(point.get(mapPoint));
-					FileOutputStream outimg = new FileOutputStream(savefolder+"\\"+point.get(mapPoint)+".jpg");
+					String getPoint = "";
+					if(point.get(mapPoint) != null) {
+						if(Integer.valueOf(point.get(mapPoint))<10) {
+							getPoint = "0" +point.get(mapPoint);
+						} else {
+							getPoint = point.get(mapPoint);
+						}
+					}
+					FileOutputStream outimg = new FileOutputStream(savefolder+"\\"+classStr+banStr+getPoint+".jpg");
 					extracted[k].write(outimg);
 					outimg.flush();
 					outimg.close();
 				}
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
 		tbo.close();
 		
 		Alert alert = new Alert(AlertType.INFORMATION);
@@ -172,14 +192,16 @@ public class ExcelController implements Initializable {
 
 	}
 
-	
 	@FXML
 	public void handleOpenExcel() {
 		fc = new FileChooser();
 		fc.setTitle("엑셀 파일 선택 - xls");
-		FileChooser.ExtensionFilter exFilter = new FileChooser.ExtensionFilter("xls file(*.xls)", "*.xls");
-		fc.getExtensionFilters().add(exFilter);
+		FileChooser.ExtensionFilter xlsFilter = new FileChooser.ExtensionFilter("xls file(*.xls)", "*.xls");
+		fc.getExtensionFilters().add(xlsFilter);
 		file =  fc.showOpenDialog(primaryStage);
+		if(file == null) {
+			handleOpenExcel();
+		}
 		this.excelFile = file.getPath().replace("\\", "/");
 	}
 	
@@ -188,6 +210,9 @@ public class ExcelController implements Initializable {
 		DirectoryChooser dc = new DirectoryChooser();
 		dc.setTitle("사진을 저장할 폴더 선택");
 		file = dc.showDialog(primaryStage);
+		if(file == null) {
+			handleSaveFolder();
+		}
 		this.savefolder = file.getPath();
 	}
 	

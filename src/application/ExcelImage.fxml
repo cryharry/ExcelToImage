@@ -8,10 +8,10 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.collections.*?>
 
-<Pane prefHeight="291.0" prefWidth="243.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.ExcelController">
+<Pane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="233.0" prefWidth="233.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.ExcelController">
    <children>
-      <Button layoutX="26.0" layoutY="217.0" mnemonicParsing="false" onAction="#doit" prefHeight="48.0" prefWidth="177.0" text="사진 저장하기" />
-      <Button layoutX="28.0" layoutY="81.0" mnemonicParsing="false" onAction="#handleSaveFolder" prefHeight="48.0" prefWidth="183.0" text="저장 폴더 선택" />
-      <Button layoutX="28.0" layoutY="14.0" mnemonicParsing="false" onAction="#handleOpenExcel" prefHeight="48.0" prefWidth="183.0" text="엑셀 불러오기" />
+      <Button layoutX="31.0" layoutY="154.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#doit" prefHeight="48.0" prefWidth="177.0" text="사진 저장하기" />
+      <Button layoutX="28.0" layoutY="81.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#handleSaveFolder" prefHeight="48.0" prefWidth="183.0" text="저장 폴더 선택" />
+      <Button layoutX="28.0" layoutY="14.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#handleOpenExcel" prefHeight="48.0" prefWidth="183.0" text="엑셀 불러오기" />
    </children>
 </Pane>
