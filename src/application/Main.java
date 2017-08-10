@@ -15,7 +15,7 @@ public class Main extends Application {
 	public void start(Stage primaryStage) throws IOException {
 		try {
 			Pane root = (Pane)FXMLLoader.load(new URL(ExcelController.class.getResource("ExcelImage.fxml").toExternalForm()));
-			Scene scene = new Scene(root,250,250);
+			Scene scene = new Scene(root,520,520);
 			primaryStage.setScene(scene);
 			primaryStage.show();
 			
