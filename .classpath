@@ -6,5 +6,6 @@
 	<classpathentry kind="lib" path="C:/Develop/Libraries/OpenXLS.jar"/>
 	<classpathentry kind="lib" path="C:/Develop/Libraries/xpp3-1.1.6.jar"/>
 	<classpathentry kind="lib" path="C:/Develop/Libraries/java-json.jar"/>
+	<classpathentry kind="lib" path="C:/Develop/Libraries/java-image-scaling-0.8.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

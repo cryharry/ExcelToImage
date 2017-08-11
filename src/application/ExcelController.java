@@ -1,6 +1,7 @@
 package application;
 
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -18,6 +19,10 @@ import com.extentech.ExtenXLS.ImageHandle;
 import com.extentech.ExtenXLS.WorkBookHandle;
 import com.extentech.ExtenXLS.WorkSheetHandle;
 import com.extentech.formats.XLS.WorkSheetNotFoundException;
+import com.mortennobel.imagescaling.ResampleOp;
+import com.sun.image.codec.jpeg.JPEGCodec;
+import com.sun.image.codec.jpeg.JPEGEncodeParam;
+import com.sun.image.codec.jpeg.JPEGImageEncoder;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -27,17 +32,14 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import sun.awt.image.ByteArrayImageSource;
 
 public class ExcelController implements Initializable {
-	public static final int RATIO = 0;
-    public static final int SAME = -1;
 	@FXML
 	private Stage primaryStage;
 	@FXML
@@ -45,7 +47,7 @@ public class ExcelController implements Initializable {
 	@FXML
 	private File file;
 	@FXML
-	private String savefolder, excelFile, classStr, banStr, mapPoint;
+	private String savefolder, excelFile, classStr, banStr, mapPoint, selSheet = "";
 	@FXML
 	private ComboBox<String> classCombo, sheetCombo;
 	@FXML
@@ -59,6 +61,7 @@ public class ExcelController implements Initializable {
 	@FXML
 	private Alert alert;
 	@FXML
+	private Button excelBtn, folderBtn, saveBtn;
 	
 	public void doit() {
 		if(excelFileTxt.getText().toString().equals("")) {
@@ -69,6 +72,19 @@ public class ExcelController implements Initializable {
 	        alert.showAndWait();
 			handleOpenExcel();
 		}
+		if(sheetCombo.getSelectionModel().getSelectedItem() == null) {
+			alert = new Alert(AlertType.ERROR);
+	        alert.setTitle("Sheet가 선택되지 않았습니다.");
+	        alert.setHeaderText(null);
+	        alert.setContentText("Sheet를 선택해주세요!");
+	        alert.showAndWait();
+		}
+		try {
+			sheet = work.getWorkSheet(selSheet);
+		} catch (WorkSheetNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		if(saveFolderTxt.getText().toString().equals("")) {
 			alert = new Alert(AlertType.ERROR);
 	        alert.setTitle("저장할 폴더가 선택되지 않았습니다.");
@@ -77,14 +93,7 @@ public class ExcelController implements Initializable {
 	        alert.showAndWait();
 			handleSaveFolder();
 		}
-		if(sheetCombo.getSelectionModel().getSelectedItem() == null) {
-			alert = new Alert(AlertType.ERROR);
-	        alert.setTitle("Sheet가 선택되지 않았습니다.");
-	        alert.setHeaderText(null);
-	        alert.setContentText("Sheet를 선택해주세요!");
-	        alert.showAndWait();
-		} else {
-			CellHandle[] cellHandle = work.getCells();
+			CellHandle[] cellHandle = sheet.getCells();
 			for(int i=0;i<cellHandle.length;i++) {
 				if(cellHandle[i].getCell().toString().startsWith("LABELSST")) {
 					String reCell = cellHandle[i].getCell().toString().replace("LABELSST:", "");
@@ -206,10 +215,11 @@ public class ExcelController implements Initializable {
 								outimg = new FileOutputStream(fileName);
 								byte[] bytes = extracted[k].getImageBytes();
 								BufferedImage image = ImageIO.read(new ByteArrayInputStream(bytes));
-								resize(image, 300, 400);
+								outimg.write(resize(image, 300, 1.3));
+								//outimg.write(reSample(image, 300, 400, 300));
 								//extracted[k].write(outimg);
-								//outimg.flush();
-								//outimg.close();
+								outimg.flush();
+								outimg.close();
 							} catch (Exception e) {
 								e.printStackTrace();
 							}
@@ -221,39 +231,57 @@ public class ExcelController implements Initializable {
 	        alert.setContentText("사진파일 저장완료!");
 	        alert.showAndWait();
 		}
-	}
 	
-	public void resize(BufferedImage src, int maxWidth, int maxHeight) throws IOException {
-		//BufferedImage src = ImageIO.read(Image);
-
-		try {
-			int width = src.getWidth();
-			int height = src.getHeight();
-	 
-			if (width > maxWidth) {
-				float widthRatio = maxWidth / (float) width;
-				width = (int) (width * widthRatio);
-	            height = (int) (height * widthRatio);
-	        }
-	        if (height > maxHeight) {
-	        	float heightRatio = maxHeight / (float) height;
-	            width = (int) (width * heightRatio);
-	            height = (int) (height * heightRatio);
-	        }
-	        BufferedImage destImg = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-	        Graphics2D g = destImg.createGraphics();
-	        g.drawImage(src, 0, 0, width, height, null);
-	        //ByteArrayOutputStream bo = new ByteArrayOutputStream();
-	        FileOutputStream fos = new FileOutputStream(savefolder);
-	        ImageIO.write(destImg, "jpg", fos);
-	        fos.flush();
-	        fos.close();
-	        //return destImg;
-	    } catch (Exception e) {
-	    	e.printStackTrace();
-	    	//System.out.println("이 파일은 사이즈를 변경할 수 없습니다. 파일을 확인해주세요.");
-	    	//return null;
+	public static byte[] resize(BufferedImage src, int maxWidth, double xyRatio) throws IOException {
+		
+		//이미지 자를 포지션 설정
+		int[] centerPoint = {src.getWidth() / 2, src.getHeight() / 2};
+		
+		//받은 이미지 사이즈
+		int cropWidth = src.getWidth();
+		int cropHeight = src.getHeight();
+	    
+		if (cropHeight > cropWidth * xyRatio) {
+			cropHeight = (int) ( cropWidth * xyRatio );
+	    } else {
+	       	cropWidth = (int) ( (float) cropHeight / xyRatio );
 	    }
+		
+		//저장될 이미지 사이즈
+		int targetWidth = cropWidth;
+		int targetHeight = cropHeight;
+			
+		if(targetWidth > maxWidth) {
+			targetWidth = maxWidth;
+			targetHeight = (int)(targetWidth * xyRatio);
+		}
+	       
+	    BufferedImage destImg = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
+	    Graphics2D g = destImg.createGraphics();
+	    g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+	    g.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
+	    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+	    g.drawImage(src, 0, 0, targetWidth, targetHeight, centerPoint[0] - (int)(cropWidth /2) , centerPoint[1] - (int)(cropHeight /2), centerPoint[0] + (int)(cropWidth /2), centerPoint[1] + (int)(cropHeight /2), null);
+	    
+	    byte[] returnByte = reSample(destImg, 300, 400, 300); 
+	    return returnByte;
+	}
+	public static byte[] reSample (BufferedImage src, int width, int height, int dpi) throws IOException {
+		ResampleOp resampleOp = new ResampleOp(width,height);
+	    BufferedImage bsImg = resampleOp.filter(src, null);
+	    
+	    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+	    JPEGImageEncoder jpgEncoder = JPEGCodec.createJPEGEncoder(bos);
+	    JPEGEncodeParam jpgParam = jpgEncoder.getDefaultJPEGEncodeParam(bsImg);
+	    jpgParam.setDensityUnit(JPEGEncodeParam.DENSITY_UNIT_DOTS_INCH);
+	    jpgEncoder.setJPEGEncodeParam(jpgParam);
+	    jpgParam.setQuality(1, false);
+	    jpgParam.setXDensity(dpi); jpgParam.setYDensity(dpi);
+	    jpgEncoder.encode(bsImg, jpgParam);
+	    
+	    ImageIO.write(bsImg, "jpg", bos);
+	    
+	    return bos.toByteArray();
 	}
 	
 	public ObservableList<String> getSheetsName() {
@@ -269,7 +297,7 @@ public class ExcelController implements Initializable {
 	public void handleOpenExcel() {
 		fc = new FileChooser();
 		fc.setTitle("엑셀 파일 선택 - xls");
-		FileChooser.ExtensionFilter xlsFilter = new FileChooser.ExtensionFilter("xls file(*.xls,*xlsx)", "*.xls","*.xlsx");
+		FileChooser.ExtensionFilter xlsFilter = new FileChooser.ExtensionFilter("xls file(*.xls)", "*.xls");
 		fc.getExtensionFilters().add(xlsFilter);
 		file =  fc.showOpenDialog(primaryStage);
 		if(file == null) {
@@ -277,17 +305,13 @@ public class ExcelController implements Initializable {
 		}
 		this.excelFile = file.getPath().replace("\\", "/");
 		excelFileTxt.setText(excelFile);
-		work = new WorkBookHandle(excelFile);
+		work = new WorkBookHandle(file);
 		ObservableList<String> sheetName = getSheetsName();
 		sheetCombo.setItems(sheetName);
 		sheetCombo.valueProperty().addListener(new ChangeListener<String>() {
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				try {
-					sheet = work.getWorkSheet(newValue);
-				} catch (WorkSheetNotFoundException e) {
-					e.printStackTrace();
-				}
+				selSheet = newValue;
 			}
 		});
 	}
