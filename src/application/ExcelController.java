@@ -18,7 +18,6 @@ import com.extentech.ExtenXLS.CellHandle;
 import com.extentech.ExtenXLS.ImageHandle;
 import com.extentech.ExtenXLS.WorkBookHandle;
 import com.extentech.ExtenXLS.WorkSheetHandle;
-import com.extentech.formats.XLS.WorkSheetNotFoundException;
 import com.mortennobel.imagescaling.ResampleOp;
 import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGEncodeParam;
@@ -51,7 +50,7 @@ public class ExcelController implements Initializable {
 	@FXML
 	private ComboBox<String> classCombo, sheetCombo;
 	@FXML
-	private TextField banTxt, excelFileTxt, saveFolderTxt;
+	private TextField classTxt, banTxt, excelFileTxt, saveFolderTxt;
 	@FXML
 	private HashMap<String, String> point = new HashMap<String, String>();
 	@FXML
@@ -81,10 +80,7 @@ public class ExcelController implements Initializable {
 		}
 		try {
 			sheet = work.getWorkSheet(selSheet);
-		} catch (WorkSheetNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+		} catch (Exception e1) {}
 		if(saveFolderTxt.getText().toString().equals("")) {
 			alert = new Alert(AlertType.ERROR);
 	        alert.setTitle("저장할 폴더가 선택되지 않았습니다.");
@@ -93,137 +89,126 @@ public class ExcelController implements Initializable {
 	        alert.showAndWait();
 			handleSaveFolder();
 		}
-			CellHandle[] cellHandle = sheet.getCells();
-			for(int i=0;i<cellHandle.length;i++) {
-				if(cellHandle[i].getCell().toString().startsWith("LABELSST")) {
-					String reCell = cellHandle[i].getCell().toString().replace("LABELSST:", "");
-					if(i<5 && reCell.contains("학년")) {
-						classStr = reCell.split(":")[1].substring(reCell.split(":")[1].indexOf("학년도")+5,reCell.split(":")[1].length()).substring(0, 1);
-						if(reCell.contains("반")){
-							banStr = reCell.split(":")[1].substring(reCell.split(":")[1].lastIndexOf("반")-1,reCell.split(":")[1].length()-1);
+		classStr = classTxt.getText();
+		banStr = banTxt.getText();
+		ImageHandle[] extracted  = sheet.getImages();
+		if(banStr.equals("") || classStr.equals("")) {
+			alert = new Alert(AlertType.ERROR);
+	        alert.setTitle("학년 또는 반이 비었습니다.");
+	        alert.setHeaderText(null);
+	        alert.setContentText("학년, 반을 확인해주세요");
+			alert.showAndWait();
+		} else {
+		for(int k=0; k<extracted.length; k++) {
+				int l= extracted[k].getRow()+2;
+				int m = extracted[k].getCol()+1;
+				String x = "";
+				switch (m) {
+					case 1:
+						x = "A";
+						break;
+					case 2:
+						x = "B";
+						break;
+					case 3:
+						x = "C";
+						break;
+					case 4:
+						x = "D";
+						break;
+					case 5:
+						x = "E";
+						break;
+					case 6:
+						x = "F";
+						break;
+					case 7:
+						x = "G";
+						break;
+					case 8:
+						x = "H";
+						break;
+					case 9:
+						x = "I";
+						break;
+					case 10:
+						x = "J";
+						break;
+					case 11:
+						x = "K";
+					case 12:
+						x = "L";
+						break;
+					case 13:
+						x = "M";
+						break;
+					case 14:
+						x = "L";
+						break;
+					case 15:
+						x = "M";
+						break;
+					case 16:
+						x = "N";
+						break;
+					case 17:
+						x = "Q";
+						break;
+					case 18:
+						x = "R";
+						break;
+					case 19:
+						x = "S";
+						break;
+					case 20:
+						x = "T";
+						break;
+					case 21:
+						x = "U";
+						break;
+					case 22:
+						x = "V";
+						break;
+					case 23:
+						x = "W";
+						break;
+					case 24:
+						x = "X";
+						break;
+					case 25:
+						x = "Y";
+						break;
+					case 26:
+						x = "Z";
+						break;
+					default:
+						break;
+					}
+					mapPoint = x+l;
+					String getPoint = "";
+					if(point.get(mapPoint) != null) {
+						if(Integer.valueOf(point.get(mapPoint))<10) {
+							getPoint = "0" +point.get(mapPoint);
+						} else {
+							getPoint = point.get(mapPoint);
 						}
 					}
-					if(reCell.contains("번")){
-						mapPoint = reCell.split(":")[0];
-						point.put(mapPoint,reCell.split(":")[1].substring(0, reCell.split(":")[1].indexOf("번")));
+					if(getPoint != "") {
+						FileOutputStream outimg;
+						try {
+							String fileName = savefolder+"\\"+classStr+banStr+getPoint+".jpg";
+							outimg = new FileOutputStream(fileName);
+							byte[] bytes = extracted[k].getImageBytes();
+							BufferedImage image = ImageIO.read(new ByteArrayInputStream(bytes));
+							outimg.write(resize(image, 300, 1.3));
+							//outimg.write(reSample(image, 300, 400, 300));
+							//extracted[k].write(outimg);
+							outimg.flush();
+							outimg.close();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 					}
-				}	
-			}
-			
-			if(Integer.valueOf(banStr)<10) {
-				banStr = "0" + banStr;
-			} 
-			ImageHandle[] extracted  = sheet.getImages();
-			for(int k=0; k<extracted.length; k++) {
-					int l= extracted[k].getRow()+2;
-					int m = extracted[k].getCol()+1;
-					String x = "";
-					switch (m) {
-						case 1:
-							x = "A";
-							break;
-						case 2:
-							x = "B";
-							break;
-						case 3:
-							x = "C";
-							break;
-						case 4:
-							x = "D";
-							break;
-						case 5:
-							x = "E";
-							break;
-						case 6:
-							x = "F";
-							break;
-						case 7:
-							x = "G";
-							break;
-						case 8:
-							x = "H";
-							break;
-						case 9:
-							x = "I";
-							break;
-						case 10:
-							x = "J";
-							break;
-						case 11:
-							x = "K";
-						case 12:
-							x = "L";
-							break;
-						case 13:
-							x = "M";
-							break;
-						case 14:
-							x = "L";
-							break;
-						case 15:
-							x = "M";
-							break;
-						case 16:
-							x = "N";
-							break;
-						case 17:
-							x = "Q";
-							break;
-						case 18:
-							x = "R";
-							break;
-						case 19:
-							x = "S";
-							break;
-						case 20:
-							x = "T";
-							break;
-						case 21:
-							x = "U";
-							break;
-						case 22:
-							x = "V";
-							break;
-						case 23:
-							x = "W";
-							break;
-						case 24:
-							x = "X";
-							break;
-						case 25:
-							x = "Y";
-							break;
-						case 26:
-							x = "Z";
-							break;
-						default:
-							break;
-						}
-						mapPoint = x+l;
-						String getPoint = "";
-						if(point.get(mapPoint) != null) {
-							if(Integer.valueOf(point.get(mapPoint))<10) {
-								getPoint = "0" +point.get(mapPoint);
-							} else {
-								getPoint = point.get(mapPoint);
-							}
-						}
-						if(getPoint != "") {
-							FileOutputStream outimg;
-							try {
-								String fileName = savefolder+"\\"+classStr+banStr+getPoint+".jpg";
-								outimg = new FileOutputStream(fileName);
-								byte[] bytes = extracted[k].getImageBytes();
-								BufferedImage image = ImageIO.read(new ByteArrayInputStream(bytes));
-								outimg.write(resize(image, 300, 1.3));
-								//outimg.write(reSample(image, 300, 400, 300));
-								//extracted[k].write(outimg);
-								outimg.flush();
-								outimg.close();
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-						}
 			}
 			alert = new Alert(AlertType.INFORMATION);
 	        alert.setTitle("저장완료");
@@ -231,6 +216,7 @@ public class ExcelController implements Initializable {
 	        alert.setContentText("사진파일 저장완료!");
 	        alert.showAndWait();
 		}
+	}
 	
 	public static byte[] resize(BufferedImage src, int maxWidth, double xyRatio) throws IOException {
 		
@@ -312,8 +298,46 @@ public class ExcelController implements Initializable {
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
 				selSheet = newValue;
+				try {
+					sheet = work.getWorkSheet(selSheet);
+				} catch (Exception e) {	}
+				CellHandle[] cellHandle = sheet.getCells();
+				for(int i=0;i<cellHandle.length;i++) {
+					if(cellHandle[i].getCell().toString().startsWith("LABELSST")) {
+						String reCell = cellHandle[i].getCell().toString().replace("LABELSST:", "");
+						if(i<5 && reCell.contains("학년")) {
+							classStr = reCell.split(":")[1].substring(reCell.split(":")[1].indexOf("학년도")+5,reCell.split(":")[1].length()).substring(0, 1);
+							if(!isStringCheck(classStr)) {
+								classStr = "";
+							}
+							classTxt.setText(classStr);
+							if(reCell.contains("반")){
+								banStr = reCell.split(":")[1].substring(reCell.split(":")[1].lastIndexOf("반")-1,reCell.split(":")[1].length()-1);
+								if(!isStringCheck(banStr)) {
+									banStr="";
+								} else if(Double.valueOf(banStr)<10) {
+									banStr = "0" + banStr;
+								}
+								banTxt.setText(banStr);
+							}
+						}
+						if(reCell.contains("번")){
+							mapPoint = reCell.split(":")[0];
+							point.put(mapPoint,reCell.split(":")[1].substring(0, reCell.split(":")[1].indexOf("번")));
+						}
+					}	
+				}
 			}
 		});
+	}
+	
+	public static boolean isStringCheck(String s) {
+		try {
+			Double.parseDouble(s);
+			return true;
+		} catch(NumberFormatException e) {
+			return false;
+		}
 	}
 	
 	@FXML

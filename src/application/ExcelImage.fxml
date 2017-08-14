@@ -11,18 +11,30 @@
 <?import javafx.collections.*?>
 <?import javafx.scene.image.ImageView?>
 
-<Pane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="316.0" prefWidth="530.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.ExcelController">
+<Pane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="435.0" prefWidth="530.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.ExcelController">
    <children>
-      <Button layoutX="146.0" layoutY="242.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#doit" prefHeight="48.0" prefWidth="258.0" text="사진 저장하기" />
-      <Button layoutX="327.0" layoutY="173.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#handleSaveFolder" prefHeight="48.0" prefWidth="183.0" text="저장 폴더 선택" />
+      <Button layoutX="148.0" layoutY="337.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#doit" prefHeight="48.0" prefWidth="258.0" text="사진 저장하기" />
+      <Button layoutX="322.0" layoutY="236.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#handleSaveFolder" prefHeight="48.0" prefWidth="183.0" text="저장 폴더 선택" />
       <Button fx:id="excelBtn" layoutX="321.0" layoutY="25.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#handleOpenExcel" prefHeight="48.0" prefWidth="183.0" text="엑셀 불러오기" />
       <TextField fx:id="excelFileTxt" editable="false" layoutX="30.0" layoutY="25.0" prefHeight="48.0" prefWidth="273.0" />
       <ComboBox fx:id="sheetCombo" layoutX="30.0" layoutY="99.0" prefHeight="40.0" prefWidth="273.0" />
-      <TextField fx:id="saveFolderTxt" editable="false" layoutX="30.0" layoutY="173.0" prefHeight="48.0" prefWidth="273.0" />
+      <TextField fx:id="saveFolderTxt" editable="false" layoutX="25.0" layoutY="236.0" prefHeight="48.0" prefWidth="273.0" />
       <Label alignment="CENTER" layoutX="324.0" layoutY="99.0" prefHeight="40.0" prefWidth="177.0" text="Sheet 선택">
          <font>
             <Font size="20.0" />
          </font>
       </Label>
+      <Label layoutX="30.0" layoutY="166.0" text="학년">
+         <font>
+            <Font size="21.0" />
+         </font>
+      </Label>
+      <Label layoutX="277.0" layoutY="166.0" text="반">
+         <font>
+            <Font size="21.0" />
+         </font>
+      </Label>
+      <TextField fx:id="classTxt" layoutX="98.0" layoutY="166.0" prefHeight="31.0" prefWidth="100.0" />
+      <TextField fx:id="banTxt" layoutX="327.0" layoutY="166.0" prefHeight="31.0" prefWidth="100.0" />
    </children>
 </Pane>
